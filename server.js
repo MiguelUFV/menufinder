@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -9,231 +11,133 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- BASE DE DATOS SIMULADA (dummy) ---
-const restaurantes = [
-  {
-    id: 1,
-    nombre: "La Trattoria de Luigi",
-    cocina: "Italiana",
-    ciudad: "Madrid",
-    direccion: "Calle Mayor 10, Madrid",
-    precio: "€€",
-    precioMedio: 20,
-    puntuacion: 4.8,
-    resenas: 124,
-    promo: "-30% en carta",
-    alergenos: ["Gluten", "Leche", "Huevos"],
-    intolerancias: ["Lactosa", "Sin gluten (opciones)"],
-    dietas: ["Omnivoro", "Vegetariano"],
-    coords: { lat: 40.4167, lng: -3.7036 },
-    descripcion: "Pasta fresca artesanal amasada a mano.",
-    menu: {
-      entrantes: [
-        { nombre: "Carpaccio trufado", precio: 14, alergenos: ["Gluten"], dietas: ["Omnivoro"] },
-        { nombre: "Provolone al horno", precio: 10, alergenos: ["Leche"], dietas: ["Vegetariano"] }
-      ],
-      principales: [
-        { nombre: "Carbonara auténtica", precio: 14, alergenos: ["Gluten", "Leche", "Huevos"], dietas: ["Omnivoro"] },
-        { nombre: "Pizza Diavola", precio: 12, alergenos: ["Gluten", "Leche"], dietas: ["Omnivoro"] }
-      ],
-      postres: [
-        { nombre: "Tiramisú clásico", precio: 6, alergenos: ["Gluten", "Leche", "Huevos"], dietas: ["Omnivoro"] }
-      ],
-      bebidas: [
-        { nombre: "Copa de vino tinto", precio: 3.5, alergenos: [], dietas: ["Omnivoro", "Vegetariano", "Vegano"] }
-      ]
-    }
-  },
-  {
-    id: 2,
-    nombre: "Gino's Plaza",
-    cocina: "Italiana",
-    ciudad: "Madrid",
-    direccion: "Plaza de Santa Ana 2, Madrid",
-    precio: "€€",
-    precioMedio: 18,
-    puntuacion: 4.2,
-    resenas: 85,
-    promo: null,
-    alergenos: ["Gluten", "Leche"],
-    intolerancias: ["Sin gluten (opciones)"],
-    dietas: ["Omnivoro", "Vegetariano"],
-    coords: { lat: 40.4148, lng: -3.7005 },
-    descripcion: "Clásicos italianos en una terraza céntrica.",
-    menu: {
-      entrantes: [
-        { nombre: "Ensalada Caprese", precio: 11, alergenos: ["Leche"], dietas: ["Vegetariano"] }
-      ],
-      principales: [
-        { nombre: "Lasaña de la Nonna", precio: 13, alergenos: ["Gluten", "Leche"], dietas: ["Omnivoro"] }
-      ],
-      postres: [
-        { nombre: "Panna Cotta", precio: 5, alergenos: ["Leche"], dietas: ["Omnivoro", "Vegetariano"] }
-      ],
-      bebidas: [
-        { nombre: "Refresco", precio: 2.5, alergenos: [], dietas: ["Omnivoro", "Vegetariano", "Vegano"] }
-      ]
-    }
-  },
-  {
-    id: 3,
-    nombre: "El Rincón Vegano",
-    cocina: "Vegana",
-    ciudad: "Madrid",
-    direccion: "Plaza España 5, Madrid",
-    precio: "€",
-    precioMedio: 15,
-    puntuacion: 4.9,
-    resenas: 310,
-    promo: "2x1 en postres",
-    alergenos: ["Soja", "Frutos de cascara"],
-    intolerancias: ["Sin lactosa"],
-    dietas: ["Vegano", "Vegetariano", "Plant-based"],
-    coords: { lat: 40.4222, lng: -3.7123 },
-    descripcion: "Cocina creativa 100% plant-based.",
-    menu: {
-      entrantes: [
-        { nombre: "Hummus arcoíris", precio: 8, alergenos: [], dietas: ["Vegano", "Plant-based"] }
-      ],
-      principales: [
-        { nombre: "Burger Beyond", precio: 13, alergenos: ["Gluten", "Soja"], dietas: ["Vegano"] }
-      ],
-      postres: [
-        { nombre: "Cheesecake vegana", precio: 6, alergenos: ["Frutos de cascara"], dietas: ["Vegano"] }
-      ],
-      bebidas: [
-        { nombre: "Kombucha de frambuesa", precio: 4, alergenos: [], dietas: ["Vegano", "Plant-based"] }
-      ]
-    }
-  },
-  {
-    id: 4,
-    nombre: "Sushi Master",
-    cocina: "Japonesa",
-    ciudad: "Madrid",
-    direccion: "Gran Vía 22, Madrid",
-    precio: "€€€",
-    precioMedio: 28,
-    puntuacion: 4.7,
-    resenas: 200,
-    promo: "-20% los martes",
-    alergenos: ["Pescado", "Soja", "Gluten"],
-    intolerancias: [],
-    dietas: ["Omnivoro", "Pescetariano"],
-    coords: { lat: 40.4197, lng: -3.7004 },
-    descripcion: "Sushi premium y cortes frescos.",
-    menu: {
-      entrantes: [
-        { nombre: "Edamame spicy", precio: 6, alergenos: ["Soja"], dietas: ["Vegano", "Vegetariano"] }
-      ],
-      principales: [
-        { nombre: "Barco variado", precio: 35, alergenos: ["Pescado", "Soja", "Gluten"], dietas: ["Pescetariano", "Omnivoro"] }
-      ],
-      postres: [
-        { nombre: "Mochis surtidos", precio: 5, alergenos: ["Gluten"], dietas: ["Omnivoro", "Vegetariano"] }
-      ],
-      bebidas: [
-        { nombre: "Sake", precio: 4.5, alergenos: [], dietas: ["Omnivoro", "Vegetariano", "Vegano"] }
-      ]
-    }
+// --- TUS CREDENCIALES ---
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'miguelmartincaro@gmail.com',
+    pass: 'bccyqrnswsxaaerh'
   }
-];
+});
 
-// --- Helpers ---
-function normalizarLista(param) {
-  if (!param) return [];
-  if (Array.isArray(param)) return param;
-  return String(param)
-    .split(',')
-    .map(v => v.trim())
-    .filter(Boolean);
-}
+const FILES = {
+    leads: path.join(__dirname, 'leads.json'),
+    restaurantes: path.join(__dirname, 'restaurantes.json'),
+    users: path.join(__dirname, 'users.json'),
+    bookings: path.join(__dirname, 'bookings.json')
+};
 
-function incluyeTodos(filtros, lista) {
-  if (!filtros.length) return true;
-  if (!lista || !lista.length) return false;
-  const lowerLista = lista.map(v => v.toLowerCase());
-  return filtros.every(f => lowerLista.includes(f.toLowerCase()));
-}
+// Helper DB
+const db = {
+    read: (file) => {
+        try {
+            if (!fs.existsSync(file)) { fs.writeFileSync(file, '[]'); return []; }
+            return JSON.parse(fs.readFileSync(file, 'utf8'));
+        } catch (e) { return []; }
+    },
+    write: (file, data) => fs.writeFileSync(file, JSON.stringify(data, null, 2))
+};
 
-// GET /api/restaurantes
-// Parámetros: q, ciudad, cocina, precioMin, precioMax, alergenos[], intolerancias[], dietas[]
+const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
+
+// --- ENDPOINTS ---
+
 app.get('/api/restaurantes', (req, res) => {
-  const { q, ciudad, cocina, precioMin, precioMax } = req.query;
-  const filtrosAlergenos = normalizarLista(req.query.alergenos);
-  const filtrosIntolerancias = normalizarLista(req.query.intolerancias);
-  const filtrosDietas = normalizarLista(req.query.dietas);
-
-  let resultados = [...restaurantes];
-
-  if (q) {
-    const term = q.toLowerCase();
-    resultados = resultados.filter(r =>
-      r.nombre.toLowerCase().includes(term) ||
-      r.cocina.toLowerCase().includes(term) ||
-      r.ciudad.toLowerCase().includes(term) ||
-      r.descripcion.toLowerCase().includes(term)
-    );
-  }
-
-  if (ciudad) {
-    const term = ciudad.toLowerCase();
-    resultados = resultados.filter(r => r.ciudad.toLowerCase().includes(term));
-  }
-
-  if (cocina) {
-    const term = cocina.toLowerCase();
-    resultados = resultados.filter(r => r.cocina.toLowerCase().includes(term));
-  }
-
-  if (precioMin) {
-    const min = Number(precioMin);
-    resultados = resultados.filter(r => r.precioMedio >= min);
-  }
-  if (precioMax) {
-    const max = Number(precioMax);
-    resultados = resultados.filter(r => r.precioMedio <= max);
-  }
-
-  if (filtrosAlergenos.length) {
-    resultados = resultados.filter(r => incluyeTodos(filtrosAlergenos, r.alergenos));
-  }
-
-  if (filtrosIntolerancias.length) {
-    resultados = resultados.filter(r => incluyeTodos(filtrosIntolerancias, r.intolerancias));
-  }
-
-  if (filtrosDietas.length) {
-    resultados = resultados.filter(r => incluyeTodos(filtrosDietas, r.dietas));
-  }
-
-  res.json(resultados);
+    const { q } = req.query;
+    let r = db.read(FILES.restaurantes);
+    if (q) {
+        const t = normalizar(q);
+        r = r.filter(i => 
+            normalizar(i.nombre).includes(t) || 
+            normalizar(i.cocina).includes(t) ||
+            normalizar(i.descripcion || "").includes(t)
+        );
+    }
+    res.json(r);
 });
 
-// GET detalle
 app.get('/api/restaurantes/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const restaurante = restaurantes.find(r => r.id === id);
-  if (!restaurante) return res.status(404).json({ error: 'Restaurante no encontrado' });
-  res.json(restaurante);
+    const r = db.read(FILES.restaurantes).find(i => i.id === Number(req.params.id));
+    r ? res.json(r) : res.status(404).json({error:'No encontrado'});
 });
 
-// POST reserva
-app.post('/api/reservar', (req, res) => {
-  const { restauranteId, fecha, hora, personas } = req.body;
-  console.log('Reserva recibida:', { restauranteId, fecha, hora, personas });
-  setTimeout(() => {
-    res.json({ status: 'ok', mensaje: 'Reserva confirmada' });
-  }, 600);
+app.post('/api/admin/restaurantes', (req, res) => {
+    const list = db.read(FILES.restaurantes);
+    req.body.id = Date.now();
+    list.push(req.body);
+    db.write(FILES.restaurantes, list);
+    res.json({ status: 'ok' });
 });
 
-// POST newsletter
-app.post('/api/suscribir', (req, res) => {
-  const { email } = req.body;
-  console.log('Nuevo suscriptor:', email);
-  res.json({ status: 'ok', mensaje: 'Cupón enviado a tu correo' });
+// Suscripción (Newsletter)
+app.post('/api/suscribir', async (req, res) => {
+    const { email, preferencia } = req.body;
+    let codigo = 'MENU10';
+    if(preferencia === 'italiana') codigo = 'PASTA10';
+    else if(preferencia === 'japonesa') codigo = 'SUSHI10';
+    else if(preferencia === 'vegana') codigo = 'GREEN10';
+    
+    try {
+        const leads = db.read(FILES.leads);
+        leads.push({ email, preferencia, codigo, date: new Date() });
+        db.write(FILES.leads, leads);
+        
+        // Email HTML Bonito
+        await transporter.sendMail({
+            from: 'MenuFinder Club', 
+            to: email, 
+            subject: `🎁 Tu código: ${codigo}`, 
+            html: `
+                <div style="font-family:sans-serif; padding:20px; border:1px solid #eee; border-radius:10px; text-align:center;">
+                    <h1 style="color:#ff385c;">¡Bienvenido!</h1>
+                    <p>Aquí tienes tu descuento para comida <strong>${preferencia}</strong>.</p>
+                    <div style="background:#f9f9f9; padding:15px; margin:20px 0; font-size:24px; font-weight:bold; letter-spacing:2px;">${codigo}</div>
+                    <p style="color:#777; font-size:12px;">Válido por 30 días.</p>
+                </div>
+            `
+        });
+        res.json({ status: 'ok' });
+    } catch (e) { res.status(500).json({error: e.message}); }
 });
 
-app.listen(port, () => {
-  console.log(`🚀 MenuFinder corriendo en http://localhost:${port}`);
+// Reservas
+app.post('/api/reservar-completa', async (req, res) => {
+    const { restaurante, fecha, hora, personas, userEmail } = req.body;
+    const bookings = db.read(FILES.bookings);
+    bookings.push({ id: Date.now(), restaurante, fecha, hora, personas, userEmail, status:'Confirmada' });
+    db.write(FILES.bookings, bookings);
+    
+    try {
+        await transporter.sendMail({
+            from: 'Reservas MenuFinder', to: userEmail, subject: 'Reserva Confirmada ✅',
+            html: `<h1>Reserva en ${restaurante}</h1><p>${fecha} a las ${hora} (${personas} pers.)</p>`
+        });
+    } catch(e) { console.error(e); }
+    
+    res.json({ status: 'ok' });
 });
+
+// Auth
+app.post('/api/auth/register', (req, res) => {
+    const { nombre, email, password } = req.body;
+    const users = db.read(FILES.users);
+    if(users.find(u => u.email === email)) return res.status(400).json({error:'Email existe'});
+    const user = { id:Date.now(), nombre, email, password };
+    users.push(user);
+    db.write(FILES.users, users);
+    
+    transporter.sendMail({
+        from: 'MenuFinder', to: email, subject: 'Bienvenido a la familia',
+        html: `<h1>Hola ${nombre}!</h1><p>Gracias por registrarte.</p>`
+    }).catch(console.error);
+
+    res.json({ status:'ok', user });
+});
+
+app.post('/api/auth/login', (req, res) => {
+    const { email, password } = req.body;
+    const user = db.read(FILES.users).find(u => u.email === email && u.password === password);
+    user ? res.json({ status:'ok', user }) : res.status(401).json({error:'Error login'});
+});
+
+app.listen(port, () => console.log(`🚀 MenuFinder LISTO en http://localhost:${port}`));

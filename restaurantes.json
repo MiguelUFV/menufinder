@@ -1,0 +1,59 @@
+[
+  {
+    "id": 1,
+    "nombre": "La Trattoria de Luigi",
+    "cocina": "Italiana",
+    "direccion": "Calle Mayor 10, Madrid",
+    "precio": "€€",
+    "puntuacion": 4.8,
+    "resenas": 124,
+    "promo": "-30% en carta",
+    "alergenos": ["Gluten", "Lácteos", "Huevo"],
+    "coords": { "lat": 40.4167, "lng": -3.7036 },
+    "descripcion": "Auténtica pasta fresca hecha a mano. Un rincón de Roma en el centro.",
+    "imagen": "https://images.unsplash.com/photo-1498579150354-977475b7ea0b?w=800&q=80",
+    "menu": {
+      "entrantes": [{ "nombre": "Carpaccio Trufado", "precio": 14 }, { "nombre": "Provolone", "precio": 10 }],
+      "principales": [{ "nombre": "Carbonara Original", "precio": 14 }, { "nombre": "Pizza Diavola", "precio": 12 }],
+      "postres": [{ "nombre": "Tiramisú", "precio": 6 }]
+    }
+  },
+  {
+    "id": 2,
+    "nombre": "Sushi Master",
+    "cocina": "Japonesa",
+    "direccion": "Gran Vía 22, Madrid",
+    "precio": "€€€",
+    "puntuacion": 4.7,
+    "resenas": 200,
+    "promo": "-20% Martes",
+    "alergenos": ["Pescado", "Soja", "Sésamo"],
+    "coords": { "lat": 40.4197, "lng": -3.7004 },
+    "descripcion": "El mejor sushi de la capital. Pescado fresco traído a diario.",
+    "imagen": "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&q=80",
+    "menu": {
+      "entrantes": [{ "nombre": "Edamame", "precio": 5 }, { "nombre": "Gyozas", "precio": 8 }],
+      "principales": [{ "nombre": "Barco 24pz", "precio": 35 }, { "nombre": "Nigiris Salmón", "precio": 12 }],
+      "postres": [{ "nombre": "Mochis", "precio": 5 }]
+    }
+  },
+  {
+    "id": 3,
+    "nombre": "Green Roots",
+    "cocina": "Vegana",
+    "direccion": "Plaza España 5, Madrid",
+    "precio": "€",
+    "puntuacion": 4.9,
+    "resenas": 310,
+    "promo": "2x1 Postres",
+    "alergenos": ["Frutos Secos", "Soja"],
+    "coords": { "lat": 40.4222, "lng": -3.7123 },
+    "descripcion": "Cocina 100% plant-based saludable y deliciosa.",
+    "imagen": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80",
+    "menu": {
+      "entrantes": [{ "nombre": "Hummus", "precio": 7 }],
+      "principales": [{ "nombre": "Burger Lentejas", "precio": 12 }, { "nombre": "Bowl Quinoa", "precio": 10 }],
+      "postres": [{ "nombre": "Brownie Vegano", "precio": 6 }]
+    }
+  }
+]
