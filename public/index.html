@@ -1,0 +1,389 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MenuFinder</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo" onclick="irAInicio()">🍽️ MenuFinder</div>
+    <div class="nav-links">
+      <button class="btn-secundario" onclick="abrirModalRestaurante()">Soy restaurante</button>
+      <button class="btn-ventajas" onclick="abrirModalVentajas()">¿Por qué nosotros?</button>
+    </div>
+  </nav>
+
+  <!-- POPUP NEWSLETTER -->
+  <div id="popup-newsletter" class="modal-overlay hidden">
+    <div class="modal-content newsletter-content">
+      <button class="close-modal" onclick="cerrarNewsletter()">×</button>
+      <div class="newsletter-body">
+        <div class="gift-icon">🎁</div>
+        <h2>¡Hola Foodie!</h2>
+        <p>Te regalamos un <strong>10% de descuento</strong> en tu primera reserva si te unes ahora.</p>
+        <form onsubmit="suscribirse(event)">
+          <input type="email" id="email-newsletter" placeholder="Tu correo electrónico" required />
+          <button type="submit" class="btn-newsletter">QUIERO MI DESCUENTO</button>
+        </form>
+        <p class="small-text">Nada de spam, solo comida rica y ofertas.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ¿POR QUÉ NOSOTROS? -->
+  <div id="modal-ventajas" class="modal-overlay hidden">
+    <div class="modal-content">
+      <button class="close-modal" onclick="cerrarModalVentajas()">×</button>
+      <div class="modal-header">
+        <h2>Come tranquilo, disfruta más 😋</h2>
+        <p>MenuFinder no es solo una app, es tu aliado gastronómico si tienes alergias, intolerancias o dietas especiales.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="icon">🛡️</div>
+          <h3>Seguridad alimentaria</h3>
+          <p>Filtros claros de alérgenos como gluten, lácteos, frutos secos o soja para que comas con tranquilidad.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🥗</div>
+          <h3>Dietas personalizadas</h3>
+          <p>Ve de un vistazo qué restaurantes son veganos, vegetarianos, plant-based o sin gluten.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">💸</div>
+          <h3>Ofertas inteligentes</h3>
+          <p>Encuentra restaurantes que encajen con tu bolsillo sin renunciar a tus necesidades alimentarias.</p>
+        </div>
+      </div>
+      <button class="btn-cta-modal" onclick="cerrarModalVentajas()">¡Me habéis convencido!</button>
+    </div>
+  </div>
+
+  <!-- MODAL SOY RESTAURANTE -->
+  <div id="modal-restaurante" class="modal-overlay hidden">
+    <div class="modal-content modal-restaurante">
+      <button class="close-modal" onclick="cerrarModalRestaurante()">×</button>
+      <div class="modal-rest-body">
+        <h2>¿Tienes un restaurante? 🍷</h2>
+        <p class="subtitle-rest">
+          Únete a <strong>MenuFinder</strong> y conviértete en el sitio de referencia para personas con alergias,
+          intolerancias y dietas especiales.
+        </p>
+
+        <div class="rest-benefits-grid">
+          <div class="rest-benefit">
+            <span class="icon">📍</span>
+            <h3>Más visibilidad</h3>
+            <p>Aparece en el mapa y en el buscador cuando alguien filtre por tu tipo de cocina o zona.</p>
+          </div>
+          <div class="rest-benefit">
+            <span class="icon">⚕️</span>
+            <h3>Alérgenos claros</h3>
+            <p>Etiqueta correctamente tus platos y gana la confianza de clientes con alergias e intolerancias.</p>
+          </div>
+          <div class="rest-benefit">
+            <span class="icon">⭐</span>
+            <h3>Reputación</h3>
+            <p>Destaca frente a la competencia mostrando claramente tus opciones veganas, sin gluten, etc.</p>
+          </div>
+        </div>
+
+        <div class="rest-cta-row">
+          <button class="btn-rest-primary" onclick="scrollToMenuUpload()">QUIERO PUBLICAR MI MENÚ</button>
+          <button class="btn-rest-secondary" onclick="abrirModalEjemploFicha()">Ver ejemplo de ficha</button>
+        </div>
+
+        <hr />
+
+        <!-- Sección subir menú y generar plantilla -->
+        <section id="zona-menu-upload" class="menu-upload">
+          <h3>Sube tu menú y genera una plantilla</h3>
+          <p class="menu-upload-sub">
+            Simulación: sube tu PDF de menú y te mostramos cómo quedaría en nuestra plantilla editable.
+          </p>
+
+          <label>Nombre del restaurante</label>
+          <input type="text" id="upload-nombre-restaurante" placeholder="Ej: PizzasStar" />
+
+          <label>Sube tu menú en PDF</label>
+          <input type="file" id="upload-pdf" accept="application/pdf" />
+
+          <button class="btn-generar-plantilla" onclick="generarPlantillaDesdePDF()">
+            Generar plantilla
+          </button>
+
+          <p class="menu-upload-note">
+            Nota: por ahora no analizamos el contenido real del PDF, solo lo usamos como referencia para generar
+            una plantilla limpia de carta.
+          </p>
+
+          <div id="resultado-plantilla" class="plantilla-preview hidden"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EJEMPLO DE FICHA -->
+  <div id="modal-ejemplo-ficha" class="modal-overlay hidden">
+    <div class="modal-content ficha-ejemplo">
+      <button class="close-modal" onclick="cerrarModalEjemploFicha()">×</button>
+      <h2>Ejemplo de ficha de restaurante</h2>
+      <div class="ficha-ejemplo-body">
+        <div class="ficha-header">
+          <div class="ficha-info">
+            <span class="badge">Italiana</span>
+            <h1>PizzasStar</h1>
+            <div class="rating-row">
+              <span>⭐⭐⭐⭐⭐</span>
+              <span class="reviews">(245 reseñas)</span>
+            </div>
+            <p>📍 Calle Ejemplo 123, Madrid</p>
+            <div class="chips-row">
+              <span class="chip chip-light">Madrid</span>
+              <span class="chip chip-dietas">Vegano • Vegetariano • Sin gluten</span>
+            </div>
+            <p class="alergenos-alert">⚠️ Alérgenos gestionados: Gluten, Leche, Frutos de cáscara, Soja</p>
+          </div>
+          <div class="ficha-price-box">
+            <span class="price-tag">€€</span>
+            <span class="promo-tag">-30% en carta</span>
+          </div>
+        </div>
+
+        <div class="ficha-grid">
+          <div class="col-menu">
+            <h2>📜 La carta</h2>
+            <div class="bloque-menu">
+              <h4>Entrantes</h4>
+              <div class="plato-row">
+                <span>Bruschetta de tomate y albahaca</span>
+                <strong>7,90 €</strong>
+              </div>
+              <div class="plato-row">
+                <span>Ensalada de burrata (opción sin lactosa)</span>
+                <strong>10,50 €</strong>
+              </div>
+            </div>
+
+            <div class="bloque-menu">
+              <h4>Principales</h4>
+              <div class="plato-row">
+                <span>Pizza Margherita (opción vegana)</span>
+                <strong>11,90 €</strong>
+              </div>
+              <div class="plato-row">
+                <span>Pasta sin gluten a la boloñesa</span>
+                <strong>13,50 €</strong>
+              </div>
+            </div>
+
+            <div class="bloque-menu">
+              <h4>Postres</h4>
+              <div class="plato-row">
+                <span>Tiramisú clásico</span>
+                <strong>5,90 €</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-reserva">
+            <div class="reserva-card">
+              <h3>Reservar mesa</h3>
+              <p>Así verán los usuarios el módulo de reserva integrado.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL MENÚ POPUP (para ver menú de un restaurante) -->
+  <div id="modal-menu-popup" class="modal-overlay hidden">
+    <div class="modal-content modal-menu-popup">
+      <button class="close-modal" onclick="cerrarMenuPopup()">×</button>
+      <h2 id="menu-popup-titulo">Menú</h2>
+      <div id="menu-popup-contenido" class="menu-popup-body"></div>
+    </div>
+  </div>
+
+  <!-- VISTA INICIO (HERO) -->
+  <section id="vista-inicio" class="vista activa">
+    <div class="hero-bg-overlay">
+      <div class="hero-content">
+        <h1>Tu próxima comida,<br />sin sustos de alérgenos.</h1>
+        <p>Encuentra restaurantes, filtra por alergias, intolerancias y dietas, y reserva en segundos.</p>
+
+        <div class="hero-search">
+          <input type="text" id="input-hero" placeholder="¿Sushi sin gluten, italiana vegana, menú sin lactosa...?" />
+          <button onclick="buscarDesdeHero()">BUSCAR</button>
+        </div>
+
+        <div class="tags-row">
+          <span>Tendencia hoy:</span>
+          <button onclick="buscarDirecto('Italiana')">🍝 Italiana</button>
+          <button onclick="buscarDirecto('Sushi')">🍣 Sushi</button>
+          <button onclick="buscarDirecto('Vegana')">🥗 Vegana</button>
+        </div>
+
+        <div class="hero-badges">
+          <span>✅ Sin gluten</span>
+          <span>✅ Sin lactosa</span>
+          <span>✅ Vegano</span>
+          <span>✅ Apto frutos secos</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VISTA MAPA + RESULTADOS -->
+  <section id="vista-mapa" class="vista oculta">
+    <div class="layout-mapa">
+      <!-- Sidebar -->
+      <div class="sidebar-resultados">
+        <div class="sidebar-header">
+          <button class="btn-volver" onclick="irAInicio()">← Volver</button>
+          <div class="search-mini">
+            <input type="text" id="input-mapa" placeholder="Refinar búsqueda (ej: vegano, sushi...)" />
+            <button onclick="actualizarBusqueda()">🔍</button>
+          </div>
+        </div>
+
+        <!-- Filtros avanzados -->
+        <div class="filters-panel">
+          <details open>
+            <summary>Filtros avanzados</summary>
+            <div class="filters-grid">
+              <div class="filters-column">
+                <h4>Alergias</h4>
+                <label><input type="checkbox" name="filtro-alergeno" value="Gluten" /> Gluten</label>
+                <label><input type="checkbox" name="filtro-alergeno" value="Leche" /> Lácteos</label>
+                <label><input type="checkbox" name="filtro-alergeno" value="Huevos" /> Huevos</label>
+                <label><input type="checkbox" name="filtro-alergeno" value="Frutos de cascara" /> Frutos de cáscara</label>
+                <label><input type="checkbox" name="filtro-alergeno" value="Soja" /> Soja</label>
+                <label><input type="checkbox" name="filtro-alergeno" value="Pescado" /> Pescado</label>
+              </div>
+              <div class="filters-column">
+                <h4>Intolerancias</h4>
+                <label><input type="checkbox" name="filtro-intol" value="Lactosa" /> Sin lactosa</label>
+                <label><input type="checkbox" name="filtro-intol" value="Sin gluten (opciones)" /> Sin gluten</label>
+                <label><input type="checkbox" name="filtro-intol" value="Sin azúcar añadido" /> Sin azúcar añadido</label>
+                <label><input type="checkbox" name="filtro-intol" value="Baja en sal" /> Baja en sal</label>
+              </div>
+              <div class="filters-column">
+                <h4>Tipo de dieta</h4>
+                <label><input type="checkbox" name="filtro-dieta" value="Vegano" /> Vegano</label>
+                <label><input type="checkbox" name="filtro-dieta" value="Vegetariano" /> Vegetariano</label>
+                <label><input type="checkbox" name="filtro-dieta" value="Plant-based" /> Plant-based</label>
+                <label><input type="checkbox" name="filtro-dieta" value="Pescetariano" /> Pescetariano</label>
+                <label><input type="checkbox" name="filtro-dieta" value="Omnivoro" /> Omnívoro</label>
+              </div>
+              <div class="filters-column">
+                <h4>Precio medio</h4>
+                <select id="filtro-precio">
+                  <option value="">Todos</option>
+                  <option value="1">Hasta 15 €</option>
+                  <option value="2">15–25 €</option>
+                  <option value="3">Más de 25 €</option>
+                </select>
+                <button class="btn-aplicar-filtros" onclick="aplicarFiltros()">Aplicar filtros</button>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <h3 id="contador-resultados" class="count-text">Busca algo para empezar</h3>
+        <div id="contenedor-tarjetas"></div>
+      </div>
+
+      <!-- Mapa -->
+      <div class="mapa-wrapper">
+        <div id="mapa"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VISTA DETALLE RESTAURANTE -->
+  <section id="vista-detalle" class="vista oculta">
+    <div class="detalle-wrapper">
+      <button class="btn-volver-mapa" onclick="volverAlMapa()">← Volver a resultados</button>
+
+      <div class="ficha-header">
+        <div class="ficha-info">
+          <span class="badge" id="ficha-cocina">COCINA</span>
+          <h1 id="ficha-nombre">Nombre restaurante</h1>
+
+          <div class="rating-row">
+            <span id="ficha-stars">⭐⭐⭐⭐⭐</span>
+            <span class="reviews" id="ficha-reviews">(0 opiniones)</span>
+          </div>
+
+          <p id="ficha-direccion">📍 Dirección</p>
+
+          <div class="chips-row">
+            <span id="ficha-ciudad" class="chip chip-light">Ciudad</span>
+            <span id="ficha-dietas" class="chip chip-dietas">Dietas</span>
+          </div>
+
+          <p id="ficha-alergenos" class="alergenos-alert">⚠️ Alérgenos gestionados</p>
+        </div>
+
+        <div class="ficha-price-box">
+          <span id="ficha-precio" class="price-tag">€€</span>
+          <span id="ficha-promo" class="promo-tag hidden">PROMO</span>
+        </div>
+      </div>
+
+      <div class="ficha-grid">
+        <div class="col-menu">
+          <div class="menu-header-row">
+            <h2>📜 La carta</h2>
+            <button class="btn-ver-menu" onclick="abrirMenuPopup()">Ver menú completo</button>
+          </div>
+          <div id="ficha-menu"></div>
+
+          <div class="similares-box">
+            <h3>Restaurantes parecidos</h3>
+            <p class="similares-subtitle">Misma zona, cocina similar o dietas compatibles.</p>
+            <div id="grid-similares" class="grid-similares"></div>
+          </div>
+        </div>
+
+        <div class="col-reserva">
+          <div class="reserva-card">
+            <h3>Reservar mesa</h3>
+            <form onsubmit="hacerReserva(event)">
+              <label>Fecha</label>
+              <input type="date" required id="res-fecha" />
+              <label>Hora</label>
+              <select id="res-hora">
+                <option>14:00</option>
+                <option>21:00</option>
+              </select>
+              <label>Personas</label>
+              <select id="res-personas">
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+              </select>
+              <button type="submit" class="btn-reservar">CONFIRMAR</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="main.js"></script>
+</body>
+</html>
