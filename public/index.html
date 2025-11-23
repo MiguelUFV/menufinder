@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MenuFinder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo" onclick="irAInicio()">🍽️ MenuFinder</div>
+    <div class="nav-links">
+      <button class="btn-secundario" onclick="window.location.href='/admin.html'">Soy restaurante</button>
+      <div id="user-area">
+          <button class="btn-login-nav" onclick="abrirLogin()">
+            <i class="fa-regular fa-user"></i> Iniciar Sesión
+          </button>
+      </div>
+    </div>
+  </nav>
+
+  <div id="popup-newsletter" class="modal-overlay hidden">
+    <div class="modal-content newsletter-card">
+      <div class="newsletter-header">
+        <button class="close-modal-white" onclick="cerrarNewsletter()">×</button>
+        <span class="discount-badge">-10%</span>
+        <h2>¡Únete al Club!</h2>
+        <p>Recibe descuentos exclusivos al instante.</p>
+      </div>
+      <div class="newsletter-body">
+        <form onsubmit="suscribirse(event)">
+          <label>¿Qué te apetece más?</label>
+          <select id="newsletter-pref" required class="input-pref">
+            <option value="" disabled selected>Selecciona favorita...</option>
+            <option value="italiana">🍝 Pasta & Pizza</option>
+            <option value="japonesa">🍣 Sushi</option>
+            <option value="vegana">🥗 Vegano</option>
+            <option value="general">🍔 De todo</option>
+          </select>
+          <input type="email" id="email-newsletter" placeholder="Tu email aquí" required />
+          <button type="submit" class="btn-newsletter-big">🎁 OBTENER MI CÓDIGO</button>
+          <p class="btn-no-gracias" onclick="cerrarNewsletter()">No gracias, prefiero pagar precio completo</p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-categorias" class="modal-overlay hidden">
+    <div class="modal-content modal-categorias-content">
+      <button class="close-modal" onclick="cerrarModalCategorias()">×</button>
+      <h2>Explora todo 🌍</h2>
+      <div class="search-wrapper-modal">
+        <input type="text" id="input-categorias" placeholder="Ej: Coreana, Halal, Kebab..." autocomplete="off">
+      </div>
+      <div id="lista-sugerencias-cat" class="grid-sugerencias"></div>
+    </div>
+  </div>
+
+  <div id="modal-auth" class="modal-overlay hidden">
+    <div class="modal-content auth-card">
+        <button class="close-modal" onclick="cerrarAuth()">×</button>
+        <div class="auth-tabs">
+            <button id="tab-login" class="tab active" onclick="switchTab('login')">Login</button>
+            <button id="tab-register" class="tab" onclick="switchTab('register')">Registro</button>
+        </div>
+        <form id="form-login" class="auth-form" onsubmit="loginUser(event)">
+            <input type="email" id="login-email" placeholder="Email" required>
+            <input type="password" id="login-pass" placeholder="Contraseña" required>
+            <button type="submit" class="btn-primary-full">Entrar</button>
+        </form>
+        <form id="form-register" class="auth-form hidden" onsubmit="registerUser(event)">
+            <input type="text" id="reg-name" placeholder="Nombre" required>
+            <input type="email" id="reg-email" placeholder="Email" required>
+            <input type="password" id="reg-pass" placeholder="Contraseña" required>
+            <button type="submit" class="btn-primary-full">Crear Cuenta</button>
+        </form>
+    </div>
+  </div>
+
+  <div id="modal-profile" class="modal-overlay hidden">
+    <div class="modal-content profile-card">
+        <button class="close-modal" onclick="cerrarProfile()">×</button>
+        <div class="profile-header">
+            <div class="avatar-circle" id="profile-initial">U</div>
+            <h2 id="profile-name">Usuario</h2>
+            <p id="profile-email">email</p>
+        </div>
+        <hr>
+        <h3>📅 Mis Reservas</h3>
+        <div id="bookings-list" class="bookings-list"><p class="text-center">Cargando...</p></div>
+        <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+    </div>
+  </div>
+
+  <section id="vista-inicio" class="vista activa">
+    <div class="hero-bg-overlay">
+      <div class="hero-content">
+        <h1>Tu próxima comida,<br />a un clic.</h1>
+        <div class="hero-search">
+            <input type="text" id="input-hero" placeholder="Busca restaurantes, platos...">
+            <button onclick="buscarDesdeHero()">BUSCAR</button>
+        </div>
+        
+        <div class="categories-slider">
+            <div class="cat-item" onclick="buscarDirecto('Hamburguesa')">
+                <div class="cat-icon">🍔</div><span>Burgers</span>
+            </div>
+            <div class="cat-item" onclick="buscarDirecto('Pizza')">
+                <div class="cat-icon">🍕</div><span>Pizza</span>
+            </div>
+            <div class="cat-item" onclick="buscarDirecto('Sushi')">
+                <div class="cat-icon">🍣</div><span>Sushi</span>
+            </div>
+            <div class="cat-item" onclick="buscarDirecto('Poke')">
+                <div class="cat-icon">🥗</div><span>Poke</span>
+            </div>
+            <div class="cat-item" onclick="buscarDirecto('Vegana')">
+                <div class="cat-icon">🥑</div><span>Vegano</span>
+            </div>
+            <div class="cat-item" onclick="buscarDirecto('Asiática')">
+                <div class="cat-icon">🍜</div><span>Asiática</span>
+            </div>
+            <div class="cat-item" onclick="buscarDirecto('Postres')">
+                <div class="cat-icon">🍰</div><span>Dulce</span>
+            </div>
+            
+            <div class="cat-item cat-more" onclick="abrirModalCategorias()">
+                <div class="cat-icon">➕</div><span>Más...</span>
+            </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="vista-mapa" class="vista oculta">
+    <div class="layout-mapa">
+        <div class="sidebar-resultados">
+            <button class="btn-volver" onclick="irAInicio()">← Volver</button>
+            <div class="search-mini">
+                <input type="text" id="input-mapa" placeholder="Refinar...">
+                <button onclick="actualizarBusqueda()">🔍</button>
+            </div>
+            <h3 id="contador-resultados" class="count-text">Cargando...</h3>
+            <div id="contenedor-tarjetas"></div>
+        </div>
+        <div class="mapa-wrapper"><div id="mapa"></div></div>
+    </div>
+  </section>
+
+  <section id="vista-detalle" class="vista oculta">
+    <div id="detalle-hero-image" class="detalle-hero">
+        <button class="btn-volver-flotante" onclick="volverAlMapa()">← Volver</button>
+    </div>
+    <div class="detalle-wrapper content-overlap">
+      <div class="ficha-header">
+        <div class="ficha-info">
+          <div class="tags-top">
+              <span class="badge" id="ficha-cocina">COCINA</span>
+              <span class="price-tag" id="ficha-precio">€€</span>
+          </div>
+          <h1 id="ficha-nombre">Nombre</h1>
+          <p id="ficha-direccion">📍 Dirección</p>
+          <p id="ficha-alergenos" class="alergenos-alert">⚠️ Alérgenos</p>
+        </div>
+      </div>
+      <div class="ficha-grid">
+        <div class="col-menu">
+          <h2>📜 La carta</h2>
+          <p class="desc-restaurante" id="ficha-descripcion"></p>
+          <div id="ficha-menu"></div>
+        </div>
+        <div class="col-reserva">
+          <div class="reserva-card sticky-card">
+            <h3>Reservar Mesa</h3>
+            <button class="btn-reservar" onclick="abrirBookingModal()">RESERVAR AHORA</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="modal-booking" class="modal-overlay hidden">
+    <div class="modal-content booking-modal">
+        <button class="close-modal" onclick="cerrarBooking()">×</button>
+        <h2>Reservar en <span id="book-rest-name" class="text-primary"></span></h2>
+        <form onsubmit="confirmarReservaReal(event)">
+            <input type="date" id="book-date" required class="input-full">
+            <input type="number" id="book-people" value="2" class="input-full">
+            <div id="guest-email-field"><input type="email" id="book-email" placeholder="Tu email" class="input-full"></div>
+            <button type="submit" class="btn-primary-full">CONFIRMAR ✅</button>
+        </form>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
